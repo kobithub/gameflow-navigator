@@ -2,8 +2,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Timer, Pause, Play, Square, Plus } from "lucide-react";
-import { SessionEvent, GameSession } from "@/types/session";
+import { Timer, Pause, Play, Square } from "lucide-react";
+import { SessionEvent, GameSession, GameEventType } from "@/types/session";
 
 interface SessionCardProps {
   session: GameSession;
@@ -11,11 +11,19 @@ interface SessionCardProps {
   onPause: (id: string) => void;
   onResume: (id: string) => void;
   onEnd: (id: string) => void;
-  onAddEvent: (id: string, e: React.FormEvent) => void;
+  onAddEvent: (id: string, eventType: GameEventType) => void;
   onNameChange: (id: string, name: string) => void;
-  newEventValue: string;
-  onNewEventChange: (value: string) => void;
 }
+
+const EVENT_TYPES: GameEventType[] = [
+  'Kill',
+  'Death',
+  'Level Up',
+  'Boss Fight',
+  'Checkpoint',
+  'Item Found',
+  'Achievement'
+];
 
 export const SessionCard = ({
   session,
@@ -24,9 +32,7 @@ export const SessionCard = ({
   onResume,
   onEnd,
   onAddEvent,
-  onNameChange,
-  newEventValue,
-  onNewEventChange
+  onNameChange
 }: SessionCardProps) => {
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -89,17 +95,20 @@ export const SessionCard = ({
           )}
         </div>
 
-        <form onSubmit={(e) => onAddEvent(session.id, e)} className="flex space-x-2">
-          <Input
-            value={newEventValue}
-            onChange={(e) => onNewEventChange(e.target.value)}
-            placeholder="Record event..."
-            className="flex-1 bg-white/10 text-white placeholder:text-white/50"
-          />
-          <Button type="submit" variant="secondary">
-            <Plus className="w-4 h-4 mr-2" /> Add Event
-          </Button>
-        </form>
+        {session.status === 'active' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {EVENT_TYPES.map((eventType) => (
+              <Button
+                key={eventType}
+                onClick={() => onAddEvent(session.id, eventType)}
+                variant="secondary"
+                className="bg-white/10 hover:bg-white/20 text-white"
+              >
+                {eventType}
+              </Button>
+            ))}
+          </div>
+        )}
 
         {session.events.length > 0 && (
           <div className="space-y-2">

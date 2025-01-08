@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { SessionCard } from "./SessionCard";
-import { GameSession } from "@/types/session";
+import { GameSession, GameEventType } from "@/types/session";
 
 export const SessionManager = () => {
   const [sessions, setSessions] = useState<GameSession[]>([]);
-  const [newEvent, setNewEvent] = useState('');
   const [elapsedTimes, setElapsedTimes] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
@@ -81,13 +80,10 @@ export const SessionManager = () => {
     toast.info("Session ended");
   };
 
-  const addEvent = (sessionId: string, e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEvent.trim()) return;
-
+  const addEvent = (sessionId: string, eventType: GameEventType) => {
     const event = {
       timestamp: new Date(),
-      description: newEvent.trim()
+      description: eventType
     };
 
     setSessions(prev => prev.map(session => 
@@ -96,8 +92,7 @@ export const SessionManager = () => {
         : session
     ));
     
-    setNewEvent('');
-    toast.success("Event recorded");
+    toast.success(`${eventType} event recorded`);
   };
 
   const handleNameChange = (sessionId: string, name: string) => {
@@ -129,8 +124,6 @@ export const SessionManager = () => {
             onEnd={endSession}
             onAddEvent={addEvent}
             onNameChange={handleNameChange}
-            newEventValue={newEvent}
-            onNewEventChange={(value) => setNewEvent(value)}
           />
         ))}
       </div>

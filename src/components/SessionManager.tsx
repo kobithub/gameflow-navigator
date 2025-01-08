@@ -51,54 +51,50 @@ export const SessionManager = () => {
     toast.success("New session started!");
   };
 
-  const pauseSession = (sessionId: string) => {
-    setSessions(prev => prev.map(session => 
-      session.id === sessionId ? { ...session, status: 'paused' } : session
-    ));
-    toast.info("Session paused");
-  };
+  const handleSessionAction = {
+    pause: (sessionId: string) => {
+      setSessions(prev => prev.map(session => 
+        session.id === sessionId ? { ...session, status: 'paused' } : session
+      ));
+      toast.info("Session paused");
+    },
 
-  const resumeSession = (sessionId: string) => {
-    setSessions(prev => prev.map(session => ({
-      ...session,
-      status: session.id === sessionId ? 'active' : 
-             session.status === 'active' ? 'paused' : session.status,
-      startTime: session.id === sessionId ? 
-                new Date(new Date().getTime() - (elapsedTimes[session.id] || 0) * 1000) : 
-                session.startTime
-    })));
-    toast.success("Session resumed");
-  };
+    resume: (sessionId: string) => {
+      setSessions(prev => prev.map(session => ({
+        ...session,
+        status: session.id === sessionId ? 'active' : 
+               session.status === 'active' ? 'paused' : session.status,
+        startTime: session.id === sessionId ? 
+                  new Date(new Date().getTime() - (elapsedTimes[session.id] || 0) * 1000) : 
+                  session.startTime
+      })));
+      toast.success("Session resumed");
+    },
 
-  const endSession = (sessionId: string) => {
-    setSessions(prev => prev.filter(session => session.id !== sessionId));
-    setElapsedTimes(prev => {
-      const newTimes = { ...prev };
-      delete newTimes[sessionId];
-      return newTimes;
-    });
-    toast.info("Session ended");
-  };
+    end: (sessionId: string) => {
+      setSessions(prev => prev.filter(session => session.id !== sessionId));
+      setElapsedTimes(prev => {
+        const newTimes = { ...prev };
+        delete newTimes[sessionId];
+        return newTimes;
+      });
+      toast.info("Session ended");
+    },
 
-  const addEvent = (sessionId: string, eventType: GameEventType) => {
-    const event = {
-      timestamp: new Date(),
-      description: eventType
-    };
+    addEvent: (sessionId: string, eventType: GameEventType) => {
+      setSessions(prev => prev.map(session => 
+        session.id === sessionId
+          ? { ...session, events: [...session.events, { timestamp: new Date(), description: eventType }] }
+          : session
+      ));
+      toast.success(`${eventType} event recorded`);
+    },
 
-    setSessions(prev => prev.map(session => 
-      session.id === sessionId
-        ? { ...session, events: [...session.events, event] }
-        : session
-    ));
-    
-    toast.success(`${eventType} event recorded`);
-  };
-
-  const handleNameChange = (sessionId: string, name: string) => {
-    setSessions(prev => prev.map(session =>
-      session.id === sessionId ? { ...session, name } : session
-    ));
+    updateName: (sessionId: string, name: string) => {
+      setSessions(prev => prev.map(session =>
+        session.id === sessionId ? { ...session, name } : session
+      ));
+    }
   };
 
   return (
@@ -119,11 +115,11 @@ export const SessionManager = () => {
             key={session.id}
             session={session}
             elapsedTime={elapsedTimes[session.id] || 0}
-            onPause={pauseSession}
-            onResume={resumeSession}
-            onEnd={endSession}
-            onAddEvent={addEvent}
-            onNameChange={handleNameChange}
+            onPause={handleSessionAction.pause}
+            onResume={handleSessionAction.resume}
+            onEnd={handleSessionAction.end}
+            onAddEvent={handleSessionAction.addEvent}
+            onNameChange={handleSessionAction.updateName}
           />
         ))}
       </div>

@@ -1,9 +1,11 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Timer, Pause, Play, Square } from "lucide-react";
-import { SessionEvent, GameSession, GameEventType } from "@/types/session";
+import { Timer } from "lucide-react";
+import { GameSession, GameEventType } from "@/types/session";
+import { SessionControls } from "./SessionControls";
+import { EventsGrid } from "./EventsGrid";
+import { EventsList } from "./EventsList";
 
 interface SessionCardProps {
   session: GameSession;
@@ -14,16 +16,6 @@ interface SessionCardProps {
   onAddEvent: (id: string, eventType: GameEventType) => void;
   onNameChange: (id: string, name: string) => void;
 }
-
-const EVENT_TYPES: GameEventType[] = [
-  'Kill',
-  'Death',
-  'Level Up',
-  'Boss Fight',
-  'Checkpoint',
-  'Item Found',
-  'Achievement'
-];
 
 export const SessionCard = ({
   session,
@@ -59,75 +51,18 @@ export const SessionCard = ({
           </div>
         </div>
 
-        <div className="flex space-x-2">
-          {session.status === 'active' && (
-            <>
-              <Button
-                onClick={() => onPause(session.id)}
-                variant="secondary"
-                className="bg-gaming-secondary hover:bg-gaming-secondary/80 text-white"
-              >
-                <Pause className="w-4 h-4 mr-2" /> Pause
-              </Button>
-              <Button
-                onClick={() => onEnd(session.id)}
-                variant="destructive"
-              >
-                <Square className="w-4 h-4 mr-2" /> End
-              </Button>
-            </>
-          )}
-          {session.status === 'paused' && (
-            <>
-              <Button
-                onClick={() => onResume(session.id)}
-                className="bg-gaming-accent hover:bg-gaming-accent/80 text-white"
-              >
-                <Play className="w-4 h-4 mr-2" /> Resume
-              </Button>
-              <Button
-                onClick={() => onEnd(session.id)}
-                variant="destructive"
-              >
-                <Square className="w-4 h-4 mr-2" /> End
-              </Button>
-            </>
-          )}
-        </div>
+        <SessionControls
+          status={session.status}
+          onPause={() => onPause(session.id)}
+          onResume={() => onResume(session.id)}
+          onEnd={() => onEnd(session.id)}
+        />
 
         {session.status === 'active' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {EVENT_TYPES.map((eventType) => (
-              <Button
-                key={eventType}
-                onClick={() => onAddEvent(session.id, eventType)}
-                variant="secondary"
-                className="bg-white/10 hover:bg-white/20 text-white"
-              >
-                {eventType}
-              </Button>
-            ))}
-          </div>
+          <EventsGrid onAddEvent={(eventType) => onAddEvent(session.id, eventType)} />
         )}
 
-        {session.events.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold text-white">Session Events</h3>
-            <div className="space-y-2">
-              {session.events.map((event, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-4 p-2 rounded bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <span className="text-sm text-gaming-secondary">
-                    {event.timestamp.toLocaleTimeString()}
-                  </span>
-                  <span className="text-white">{event.description}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <EventsList events={session.events} />
       </div>
     </Card>
   );
